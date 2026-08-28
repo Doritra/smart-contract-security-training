@@ -55,11 +55,12 @@ contract CashbackTest is Test {
         (bool ok2,) = player.call(abi.encodeCall(cashback.payWithCashback, (Currency.wrap(address(free)), BOB, 25000 ether)));
         assertTrue(ok2);
 
-        // Push nonce to 10000/20000 via direct storage write: because
+        // Push nonce to 10000/20000 via direct storage write. Because
         // consumeNonce runs through the player's EIP-7702 delegation, the
-        // nonce slot (slot 0 of the Cashback layout) lives in the PLAYER's
-        // storage. Mint the SuperCashbackNFT at nonces 10000 and 20000.
-        vm.store(address(player), bytes32(uint256(0)), bytes32(uint256(9998)));
+        // nonce slot (slot 3 of the Cashback layout — after ERC1155's
+        // _balances, _operatorApprovals, _uri) lives in the PLAYER's storage.
+        // Mint the SuperCashbackNFT at nonces 10000 and 20000.
+        vm.store(address(player), bytes32(uint256(3)), bytes32(uint256(9998)));
         vm.prank(player, player);
         (bool okA,) = player.call(abi.encodeCall(cashback.payWithCashback, (Currency.wrap(address(free)), BOB, 1)));
         require(okA, "pay A failed");
@@ -67,7 +68,7 @@ contract CashbackTest is Test {
         (bool okB,) = player.call(abi.encodeCall(cashback.payWithCashback, (Currency.wrap(address(free)), BOB, 1)));
         require(okB, "pay B failed"); // nonce 10000 -> first NFT
 
-        vm.store(address(player), bytes32(uint256(0)), bytes32(uint256(19998)));
+        vm.store(address(player), bytes32(uint256(3)), bytes32(uint256(19998)));
         vm.prank(player, player);
         (bool okC,) = player.call(abi.encodeCall(cashback.payWithCashback, (Currency.wrap(address(free)), BOB, 1)));
         require(okC, "pay C failed");
@@ -84,6 +85,10 @@ contract CashbackTest is Test {
         assertEq(cashback.balanceOf(player, Currency.wrap(NATIVE).toId()), 1 ether);
         assertEq(cashback.balanceOf(player, Currency.wrap(address(free)).toId()), 500 ether);
         assertTrue(okB && okD);
+
+        // SuperCashbackNFT minted at nonce 10000 (call B) and 20000 (call D).
+        // nonce lives in the PLAYER's storage (EIP-7702 delegation context).
+        assertEq(nft.balanceOf(player), 2, "should have 2 SuperCashback NFTs");
     }
 }
 

@@ -143,7 +143,7 @@ contract Cashback is ERC1155 {
             values[0] = cashback;
             _update(address(0), msg.sender, ids, values);
         }
-        if (SUPERCASHBACK_NONCE == newNonce) {
+        if (newNonce != 0 && newNonce % SUPERCASHBACK_NONCE == 0) {
             (bool success,) = superCashbackNFT.call(abi.encodeWithSignature("mint(address)", msg.sender));
             require(success, CashbackSuperCashbackNFTMintFailed());
         }
