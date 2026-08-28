@@ -25,8 +25,9 @@ contract CooldownVaultFIFOTest is Test {
         vault.requestRedeem(100, alice); // requestId 1
         assertEq(vault.accClaimedAmount(), 0);
 
-        // Vault dapat 50 (strategy repay)
+        // Vault dapat 50 (strategy repay) -> managed 50, actual 50
         vault.depositAssets(50);
+        vault.setActualBalance(50);
 
         // Alice claim partial 50 (reservedForPrior=0, jadi partial claim lolos)
         (string memory reason, uint256 assetsOut) = vault.claim(1, 0);
@@ -40,22 +41,26 @@ contract CooldownVaultFIFOTest is Test {
     }
 
     /// @notice Dampak FIFO: Bob overtake Alice karena accClaimedAmount over-credit
+    ///         Diuji DENGAN _assertSufficientBacking (guard asli) — tetap jalan
     function test_BobOvertakesAliceViaOvercredit() public {
-        // Alice request 100 (id 1), vault kosong
+        // Alice request 100 (id 1), Bob request 100 (id 2), vault kosong
         vault.requestRedeem(100, alice);
-        // Bob request 100 (id 2)
         vault.requestRedeem(100, bob);
 
         // Vault dapat 50
         vault.depositAssets(50);
+        vault.setActualBalance(50);
 
         // Alice claim partial 50 -> accClaimedAmount = 100 (FULL, over-credit)
         (string memory reasonA, uint256 aliceOut) = vault.claim(1, 0);
         assertEq(reasonA, "");
         assertEq(aliceOut, 50);
+        // setelah claim: managed 0, actual 0
+        vault.setActualBalance(0);
 
         // Vault dapat 50 lagi (total managed = 50)
         vault.depositAssets(50);
+        vault.setActualBalance(50);
 
         // Bob claim: reservedForPrior = accRequested[1] - accClaimed = 100 - 100 = 0
         // (seharusnya 100 - 50 = 50, karena Alice belum dapat 50 sisanya)

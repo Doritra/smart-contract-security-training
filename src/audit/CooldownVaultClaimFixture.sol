@@ -47,6 +47,17 @@ contract CooldownVaultClaimFixture {
         totalLockedAssets += assets;
     }
 
+    // === _assertSufficientBacking replika (guard asli baris 707-710) ===
+    uint256 public actualBalance;
+
+    function setActualBalance(uint256 bal) external {
+        actualBalance = bal;
+    }
+
+    function _assertSufficientBacking() internal view {
+        if (actualBalance < _managedAssets) revert("AssetBackingMismatch");
+    }
+
     // === _claim replika (tanpa cooldown, fokus FIFO + partial claim) ===
     function claim(uint256 requestId, uint256 minAssetsOut)
         external
@@ -77,6 +88,7 @@ contract CooldownVaultClaimFixture {
         totalLockedAssets -= request.assets;   // FULL
         accClaimedAmount += request.assets;    // FULL  <-- over-credit kalau partial
         _managedAssets -= assetsOut;           // partial
+        _assertSufficientBacking();
 
         return ("", assetsOut);
     }
