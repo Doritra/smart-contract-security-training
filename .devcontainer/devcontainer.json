@@ -1,0 +1,24 @@
+{
+  "name": "Damn Vulnerable DeFi Devcontainer",
+
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "NomicFoundation.hardhat-solidity",
+        "tintinweb.solidity-visual-auditor"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/usr/bin/zsh" } }
+      }
+    }
+  },
+
+  "postCreateCommand": "zsh"
+}
+

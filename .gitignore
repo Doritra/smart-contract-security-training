@@ -1,0 +1,27 @@
+# Build artifacts
+out/
+cache/
+builds/
+crytic-export/
+foundry.lock
+
+# Local binaries (Windows tools)
+*.exe
+*.zip
+echidna*
+stack*
+
+# Original level sources (downloads; fixtures live in src/)
+archive/
+
+# Training notes (not part of the repo)
+outputs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+doc/
